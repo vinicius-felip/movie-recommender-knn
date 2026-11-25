@@ -44,34 +44,111 @@ st.markdown('''<style>
 [data-testid="stExpandSidebarButton"], [data-testid="stSidebarCollapseButton"] {
     pointer-events:auto !important;
 }
-[data-testid="stMainBlockContainer"], .block-container {max-width:1360px;padding-top:1.8rem;padding-bottom:1rem;}
-[data-testid="stMain"] [data-testid="stMarkdownContainer"] p {font-size:1.05rem;line-height:1.4;}
-.slide-lead {font-size:clamp(1.2rem,2.3vw,2rem);line-height:1.25;font-weight:650;max-width:1050px;margin:.3rem 0 .8rem;color:#f4f4f5;}
-.slide-kicker {font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:#a5a8b3;margin:.25rem 0;}
-.slide-card {background:#191c24;border:1px solid #303540;border-radius:12px;padding:1.1rem;min-height:125px;margin:.15rem 0;}
+/* Um padrão para as 14 páginas. O espaço depende do grupo de conteúdo,
+   e não do número da página. Cards têm sua própria grade; controles próximos
+   usam containers nomeados, sem comprimir o restante do slide. */
+.stApp {
+    --section-gap:20px;
+    --card-gap:24px;
+    --panel-gap:12px;
+    --control-gap:8px;
+    --block-gap:16px;
+}
+.st-key-seminar_slide {--block-gap:var(--section-gap);}
+.st-key-seminar_navigation, .st-key-seminar_heading {--block-gap:8px;}
+.st-key-seminar_slide [data-testid="stColumn"] {--block-gap:var(--section-gap);}
+[class*="st-key-seminar_panel_"] {--block-gap:var(--panel-gap);}
+[class*="st-key-seminar_controls_"] {--block-gap:var(--control-gap);}
+[data-testid="stMainBlockContainer"], .block-container {
+    max-width:1360px;
+    padding-top:1.8rem;
+    padding-bottom:1.5rem;
+}
+[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"],
+.block-container.stVerticalBlock {
+    display:flex !important;
+    flex-direction:column !important;
+    gap:var(--block-gap) !important;
+}
+/* Inclui os grupos de cards e colunas que a versão atual envolve em wrappers. */
+[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] > :is([data-testid="stLayoutWrapper"], [data-testid="stElementContainer"], [data-testid="stHorizontalBlock"], [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"]) {
+    margin-block:0 !important;
+    flex-shrink:0 !important;
+}
+[data-testid="stMainBlockContainer"] [data-testid="stHorizontalBlock"] {
+    /* O gap horizontal vem de st.columns: o Streamlit também calcula
+       a largura das colunas a partir dele. Não sobrescrever só uma metade. */
+    row-gap:var(--panel-gap) !important;
+}
+/* Retira somente os blocos técnicos invisíveis do fluxo de layout.
+   O iframe de atalhos continua no DOM e pode executar seu script. */
+[data-testid="stMainBlockContainer"] [data-testid="stElementContainer"]:has(style):not(:has(.slide-card, .slide-lead, .slide-key, .slide-flow, .slide-hero)),
+[data-testid="stMainBlockContainer"] [data-testid="stElementContainer"][height="0px"]:has(iframe),
+[data-testid="stMainBlockContainer"] [data-testid="stElementContainer"]:has(iframe[height="0"]) {
+    position:absolute !important;
+    width:0 !important;
+    height:0 !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    pointer-events:none !important;
+}
+[data-testid="stMain"] [data-testid="stMarkdownContainer"] p {font-size:1.05rem;line-height:1.45;}
+.slide-lead {
+    font-size:clamp(1.2rem,2.3vw,2rem);line-height:1.25;font-weight:650;
+    max-width:1100px;margin:0 0 .22rem;padding:.12rem 0 .3rem;color:#f4f4f5;
+}
+.slide-kicker {font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:#b6bac5;margin:0;}
+.slide-cards {
+    display:grid;grid-template-columns:repeat(var(--card-columns),minmax(0,1fr));
+    gap:var(--card-gap);align-items:stretch;
+}
+.slide-card {
+    box-sizing:border-box;background:#191c24;border:1px solid #303540;border-radius:12px;
+    padding:1.15rem 1.3rem;min-height:136px;height:100%;margin:0;
+}
+.slide-cards.compact .slide-card {min-height:0;padding:.85rem 1rem;}
 .slide-card.focus {border-color:#f04452;border-left:4px solid #f04452;}
-.slide-card h3 {font-size:1.2rem !important;margin:0 0 .55rem !important;}
-.slide-card p {font-size:1.03rem;line-height:1.4;color:#d5d7de;margin:0;}
-.slide-card .card-tag {font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:#ff8790;margin-bottom:.55rem;}
-.slide-key {border-left:3px solid #f04452;padding:.4rem .8rem;margin:.65rem 0;color:#f4f4f5;font-size:1.1rem;font-weight:600;}
-.slide-flow {display:flex;align-items:center;gap:.65rem;margin:.5rem 0;flex-wrap:wrap;}
-.slide-flow span {background:#191c24;border:1px solid #343842;padding:.65rem .9rem;border-radius:8px;font-weight:600;}
+.slide-card h3 {font-size:1.2rem !important;margin:0 0 .55rem !important;padding:0 !important;}
+.slide-card p {font-size:1.03rem;line-height:1.45;color:#d5d7de;margin:0;}
+.slide-card .card-tag {font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:#ff8790;margin-bottom:.65rem;}
+.slide-key {border-left:3px solid #f04452;padding:.55rem .85rem;margin:.15rem 0 .25rem;color:#f4f4f5;font-size:1.1rem;font-weight:600;line-height:1.4;}
+.slide-flow {display:flex;align-items:center;gap:.8rem;margin:.2rem 0 .35rem;flex-wrap:wrap;}
+.slide-flow span {background:#191c24;border:1px solid #343842;padding:.7rem 1rem;border-radius:8px;font-weight:600;}
 .slide-flow b {color:#f04452;}
-.slide-hero {font-size:clamp(2rem,4vw,3.6rem);line-height:1.1;font-weight:750;max-width:1050px;margin:.65rem 0 1.25rem;letter-spacing:-.04em;}
+.slide-hero {font-size:clamp(2rem,4vw,3.6rem);line-height:1.1;font-weight:750;max-width:1100px;margin:.7rem 0 .3rem;letter-spacing:-.04em;}
 .slide-hero em {color:#ff6977;font-style:normal;}
-[data-testid="stMain"] [data-testid="stCaptionContainer"] p {font-size:.85rem;color:#a5a8b3;}
-
-[data-testid="stMain"] [data-testid="stVerticalBlock"] {gap:.45rem;}
+[data-testid="stMain"] [data-testid="stCaptionContainer"],
+[data-testid="stMain"] [data-testid="stCaptionContainer"] p {font-size:.85rem;color:#b6bac5 !important;line-height:1.4;}
 h1,h2,h3 {letter-spacing:-.035em;}
-h1 {font-size:2rem !important;padding:.15rem 0 .3rem !important;}
+h1 {font-size:2rem !important;padding:.15rem 0 .35rem !important;}
 h2 {font-size:1.65rem !important;padding:.2rem 0 !important;}
 h3 {font-size:1.12rem !important;padding:.15rem 0 !important;}
-p {margin-bottom:.25rem;}
-[data-testid="stMetric"] {border:1px solid #393d48;border-radius:8px;padding:8px 12px;}
+[data-testid="stMetric"] {box-sizing:border-box;border:1px solid #393d48;border-radius:8px;padding:12px 16px;}
 [data-testid="stMetricValue"] {font-size:1.65rem;}
 [data-testid="stSidebar"] {background:#191c24;}
 [data-testid="stCode"] pre {font-size:.84rem !important;line-height:1.35 !important;padding:10px !important;}
 .katex-display {margin:.45em 0 !important;}
+/* Resolução baixa: reduz apenas os espaços, não o tamanho do texto. */
+@media (max-height:700px) {
+    .stApp {
+        --section-gap:16px;
+        --card-gap:20px;
+        --panel-gap:10px;
+    }
+    [data-testid="stMainBlockContainer"], .block-container {
+        padding-top:1.25rem;
+        padding-bottom:1rem;
+    }
+    .slide-card {min-height:110px;padding:.9rem 1.15rem;}
+    .slide-hero {margin:.35rem 0 .15rem;}
+    [data-testid="stMetric"] {padding:9px 13px;}
+    .slide-flow span {padding:.55rem .85rem;}
+}
+@media (max-width:760px) {
+    .slide-cards {grid-template-columns:1fr;}
+}
 </style>''', unsafe_allow_html=True)
 
 # A página é o estado principal; o seletor é sincronizado por callbacks.
@@ -112,7 +189,8 @@ def navigation():
     st.progress((page+1)/len(PAGES))
 
 
-navigation()
+with st.container(key='seminar_navigation'):
+    navigation()
 # O atalho é opcional: os botões e o seletor funcionam sem JavaScript.
 # Não intercepta setas usadas para alterar notas, sliders ou outros controles.
 import streamlit.components.v1 as components
@@ -143,10 +221,6 @@ try {
   }
 } catch (_) { /* navegação nativa permanece disponível */ }
 </script>'''.replace('SLIDE_NUMBER', str(page)), height=0, width=0)
-if page not in (0, 12):
-    st.title(PAGES[page])
-
-
 def takeaway(text):
     st.markdown(f'<div class="slide-key">{escape(text)}</div>', unsafe_allow_html=True)
 
@@ -155,10 +229,22 @@ def lead(text):
     st.markdown(f'<div class="slide-lead">{escape(text)}</div>', unsafe_allow_html=True)
 
 
-def card(title, body, tag='', focus=False):
+def card_html(title, body, tag='', focus=False):
     cls = 'slide-card focus' if focus else 'slide-card'
     label = f'<div class="card-tag">{escape(tag)}</div>' if tag else ''
-    st.markdown(f'<div class="{cls}">{label}<h3>{escape(title)}</h3><p>{escape(body)}</p></div>', unsafe_allow_html=True)
+    return f'<div class="{cls}">{label}<h3>{escape(title)}</h3><p>{escape(body)}</p></div>'
+
+
+def cards(items, columns=None, compact=False):
+    """Mesma grade e mesmo espaço entre cards, em linha ou empilhados."""
+    columns = columns or len(items)
+    cls = 'slide-cards compact' if compact else 'slide-cards'
+    content = ''.join(card_html(*item) for item in items)
+    st.markdown(f'<div class="{cls}" style="--card-columns:{columns}">{content}</div>', unsafe_allow_html=True)
+
+
+def slide_columns(widths):
+    return st.columns(widths, gap='medium')
 
 
 def flow(*items):
@@ -202,12 +288,13 @@ def metric_demo():
         'Pearson': ('pearson', metrics.pearson_correlation, r'r=\frac{(A-\bar A)\cdot(B-\bar B)}{\|A-\bar A\|\|B-\bar B\|}',
             'Compara a variação das notas em relação às médias.', 'Captura tendências de gosto mesmo quando um usuário costuma dar notas menores.', 'Indefinida para vetores constantes; com apenas duas notas distintas pode resultar em +1 ou −1 sem evidência robusta.'),
     }
-    chosen = st.radio('Métrica de proximidade', list(options), horizontal=True, label_visibility='collapsed')
-    metric, fn, formula, description, advantage, limitation = options[chosen]
-    st.markdown(f'**{description}**')
+    with st.container(key='seminar_controls_metric'):
+        chosen = st.radio('Métrica de proximidade', list(options), horizontal=True, label_visibility='collapsed')
+        metric, fn, formula, description, advantage, limitation = options[chosen]
+        st.markdown(f'**{description}**')
     a = np.array([5,4,2,3], dtype=float)
-    l,r = st.columns([1,1.2])
-    with l:
+    l,r = slide_columns([1,1.2])
+    with l, st.container(key='seminar_controls_metric_math'):
         st.caption('A = (5, 4, 2, 3) · Edite as notas de B nos mesmos filmes')
         cols = st.columns(4)
         b = np.array([c.number_input(f'B{i+1}',1,5,v,step=1,key=f'sem_b{i}') for i,(c,v) in enumerate(zip(cols,[4,3,2,3]))],dtype=float)
@@ -230,16 +317,14 @@ def metric_demo():
         st.latex(calc+'='+result if np.isfinite(val) else calc)
         st.markdown(f'**Peso do vizinho: {weight:.4f}**')
         st.caption('Peso = 1/(1+d) para distância; max(0,s) para similaridade válida.')
-    with r:
+    with r, st.container(key='seminar_controls_metric_code'):
         st.caption('IMPLEMENTAÇÃO REAL · src/metrics.py')
         st.code(compact_source(fn),language='python')
         if metric=='pearson':
             st.caption(f'Médias: A = {a.mean():g}; B = {b.mean():g}. Reutiliza a função cosseno.')
             with st.expander('Ver função reutilizada'):
                 st.code(compact_source(metrics.cosine_similarity),language='python')
-    c1,c2=st.columns(2)
-    c1.markdown('**+ Vantagem**  \n'+advantage)
-    c2.markdown('**− Limitação**  \n'+limitation)
+    cards([('+ Vantagem',advantage),('− Limitação',limitation)],compact=True)
 
 
 def results_page():
@@ -256,17 +341,17 @@ def results_page():
             if measure=='coverage':
                 display=display[display.model!='baseline'].copy()
                 display[measure]*=100
-            l,r=st.columns([1.45,1])
+            l,r=slide_columns([1.45,1])
             with l:
                 st.bar_chart(display.set_index('Modelo')[measure],height=235)
-            with r:
+            with r, st.container(key='seminar_panel_test_results'):
                 table=display[['Modelo','metric','k',measure]].copy()
                 table.columns=['Modelo','Métrica','k',choice]
                 st.dataframe(table.round(4),hide_index=True,use_container_width=True,height=185)
                 st.caption('Coverage em %; baseline sem vizinhos. Erros menores são melhores.')
             takeaway('Gêneros trouxe ganho modesto; incluir demografia não reduziu mais o RMSE.')
         elif view=='Validação de k':
-            l,r=st.columns(2)
+            l,r=slide_columns(2)
             mode=l.selectbox('Modelo',list(LABELS)[:3],format_func=LABELS.get)
             measure=r.radio('Erro',['rmse','mae'],horizontal=True)
             subset=validation[validation.model==mode]
@@ -286,143 +371,159 @@ def results_page():
         st.warning(f'Resultado indisponível: {exc}. Execute experiments.py ou disponibilize results_v2.zip.')
 
 
-if page == 0:
-    st.markdown('<div class="slide-kicker">Seminário de inteligência artificial · 2026</div><div class="slide-hero">Como prever o próximo <em>filme favorito</em> de um usuário?</div>',unsafe_allow_html=True)
-    lead('k-NN e filtragem colaborativa')
-    st.write('Da primeira implementação à avaliação de um recomendador híbrido.')
-    for c,label,value in zip(st.columns(3),['Avaliações reais','Métricas de proximidade','Configurações avaliadas'],['100.000','5','90']): c.metric(label,value)
-    flow('Problema','Algoritmo','Melhoria','Resultados','Demonstração')
-elif page == 1:
-    lead('Um catálogo enorme. Gostos diferentes.')
-    l,r=st.columns([1,1.15])
-    with l:
-        card('Popularidade','A mesma lista de filmes para todos.')
-        card('Personalização','Estimar o que cada usuário gostaria de assistir.','Nosso objetivo',True)
-    with r:
-        st.caption('Exemplo fictício · avaliações de 1 a 5')
-        st.dataframe(pd.DataFrame({'Filme':['Star Wars','Titanic','Toy Story'],'A':[5,2,4],'B':[2,5,2],'X':[5,2,None]}),hide_index=True,use_container_width=True,height=145)
-        takeaway('Qual nota X daria a Toy Story?')
-    st.caption('Entrada: notas conhecidas. Saída: notas previstas e ranking de filmes não avaliados.')
-elif page == 2:
-    lead('Como personalizar uma recomendação?')
-    for col,(title,body,tag,focus) in zip(st.columns(3),[
-        ('Conteúdo','Compara características dos filmes com o gosto do usuário.','Alternativa',False),
-        ('Colaborativa','Busca usuários com avaliações semelhantes.','Nossa primeira solução',True),
-        ('Híbrida','Combina notas e atributos adicionais para comparar usuários.','Nossa evolução',False)]):
-        with col: card(title,body,tag,focus)
-    flow('Usuário X','Usuários semelhantes','Filmes recomendados')
-    takeaway('Começamos pela filtragem colaborativa baseada em usuários.')
-elif page == 3:
-    lead('k-NN: aprender com exemplos conhecidos.')
-    flow('Armazenar instâncias','Medir proximidade','Selecionar k vizinhos','Prever')
-    l,r=st.columns(2)
-    with l: card('Classificação','Votação dos vizinhos → uma classe. Ex.: gosta ou não gosta.')
-    with r: card('Regressão','Média das notas dos vizinhos → valor numérico. Ex.: 4,82.','Nosso problema',True)
-    takeaway('Lazy learning: o modelo consulta os exemplos em vez de ajustar parâmetros preditivos.')
-elif page == 4:
-    lead('Das notas conhecidas à previsão de uma nota.')
-    df=pd.DataFrame({'Filme A':[5,4,1,2,5],'Filme B':[4,4,5,5,3],'Filme C':[5,4,1,np.nan,3]},index=[1,2,3,4,5])
-    l,r=st.columns([1,1.2])
-    with l:
-        st.markdown('**1 · Perfil X: A = 5, B = 4, C = ?**')
-        st.dataframe(df,use_container_width=True,height=215)
-        k=st.slider('2 · Quantidade máxima de vizinhos (k)',1,5,3,key='knn_demo_k')
-    model=MovieKNN(df,'euclidiana')
-    neighbors=model.neighbors(pd.Series({'Filme A':5,'Filme B':4}))
-    score,details=model.predict('Filme C',neighbors,k)
-    with r:
-        st.markdown('**3 · Mais próximos que avaliaram C**')
-        table=pd.DataFrame(details,columns=['Usuário','Distância','Peso','Em comum','Nota']).drop(columns='Em comum')
-        st.dataframe(table.round(3),hide_index=True,use_container_width=True,height=180)
-        st.caption('Distância euclidiana entre A e B; peso = 1/(1+d).')
-        st.latex(r'\hat r=\frac{\sum_v w_vr_v}{\sum_v w_v}'+r'\approx\frac{'+ '+'.join(f'{row[2]:.2f}\\cdot {row[4]:g}' for row in details)+'}{'+ '+'.join(f'{row[2]:.2f}' for row in details)+'}')
-        st.metric('4 · Nota prevista para C',f'{score:.2f}')
-    st.caption('Exemplo fictício. O ranking repete a previsão para cada filme não avaliado.')
-elif page == 5:
-    metric_demo()
-elif page == 6:
-    lead('A maioria das avaliações não existe.')
-    for c,label,value in zip(st.columns(4),['Usuários','Filmes','Avaliações','Esparsidade'],['943','1.682','100.000','93,7%']):c.metric(label,value)
-    st.progress(.063,text='Apenas 6,3% da matriz está preenchida')
-    try:
-        ratings=load_ratings(); matrix=build_rating_matrix(ratings)
-        with st.expander('Explorar os dados reais',expanded=True):
-            start=st.slider('Primeiro usuário exibido',0,len(matrix)-5,0)
-            st.dataframe(matrix.iloc[start:start+5,:8],height=210,use_container_width=True)
-    except FileNotFoundError: st.warning('Base local ausente. Execute download_data.py.')
-    takeaway('NaN é ausência de avaliação, não nota zero.')
-elif page == 7:
-    lead('A primeira versão funcionou. Mas nem toda nota alta era confiável.')
-    l,r=st.columns(2)
-    with l:
-        card('Nossa primeira solução','Comparar notas em comum e prever pela média ponderada.','k-NN tradicional')
-        card('O problema','Filmes raros podiam receber 5,00 com apenas 1 ou 2 vizinhos.','Primeira execução',True)
-    with r:
-        st.metric('Usuários elegíveis no modelo tradicional','505 / 943')
-        st.caption('Exemplo do perfil fictício executado na versão 2.')
-        st.metric('Melhor configuração tradicional','Hamming · k = 20')
-        st.caption('Seleção pelo RMSE de validação.')
-    takeaway('Precisávamos ampliar a busca de vizinhos e exigir suporte mínimo para recomendar.')
-elif page == 8:
-    lead('Mais atributos para encontrar vizinhos, mesmo sem filmes em comum.')
-    for col,(title,body,tag) in zip(st.columns(3),[
-        ('Notas','Avaliações dos mesmos filmes.','50%'),('Gêneros','Média das notas por gênero.','35%'),('Perfil','Idade, ocupação e sexo registrado.','15%')]):
-        with col: card(title,body,tag)
-    l,r=st.columns([1.1,1])
-    with l:
-        st.latex(r'S=\frac{\sum_{j\in D}w_jS_j}{\sum_{j\in D}w_j}')
-        st.caption('Pesos iniciais, não otimizados; D = blocos disponíveis.')
-    with r:
-        st.metric('Usuários elegíveis no exemplo','943 / 943',delta='438 a mais que o tradicional')
-        st.caption('Elegível não significa igualmente semelhante.')
-    takeaway('A nota continua sendo prevista pelos vizinhos que avaliaram o filme.')
-    with st.expander('Detalhes: gêneros, demografia e suporte'):
-        st.latex(r'S_g=1-\frac{\operatorname{mean}(|A_g-B_g|)}{4}')
-        st.write('Demografia: média das comparações disponíveis. Idade usa diferença limitada a 60 anos; ocupação e sexo usam igualdade. Exigimos evidência positiva de gosto. Suporte mínimo filtra o ranking da interface.')
-elif page == 9:
-    lead('Como verificamos se a melhoria funcionou?')
-    for c,label,value in zip(st.columns(3),['Treino · 64%','Validação · 16%','Teste · 20%'],['64.000','16.000','20.000']):c.metric(label,value)
-    flow('3 modelos × 5 métricas × 6 valores de k','90 configurações','Escolha pelo RMSE')
-    l,r=st.columns(2)
-    with l: card('Previsão de notas','MAE e RMSE: menor erro é melhor. Coverage: previsões com vizinhos.')
-    with r: card('Ranking','Precision: proporção de relevantes no Top N. Recall: proporção de relevantes recuperados.')
-    st.caption('Baseline: média do filme. Relevância: nota real ≥ 4. Ranking restrito ao teste.')
-    with st.expander('Fórmulas e protocolo experimental'):
-        st.latex(r'MAE=\frac{1}{n}\sum_i|r_i-\hat r_i|\qquad RMSE=\sqrt{\frac{1}{n}\sum_i(r_i-\hat r_i)^2}')
-        st.latex(r'Precision@N=\frac{acertos}{N}\qquad Recall@N=\frac{acertos}{total\ relevante}')
-        st.write('Divisão aleatória por avaliação, semente 42. Escolhemos cada modelo pela validação, depois usamos treino + validação para prever o teste. O ranking só considera avaliações ocultas; média por usuário com pelo menos um relevante.')
-elif page == 10:
-    results_page()
-elif page == 11:
-    flow('dataset.py','metrics.py / hybrid.py','knn.py','experiments.py / app.py')
-    funcs={
-        'Encontrar vizinhos':(MovieKNN.neighbors,'Compara o perfil com todos os usuários e ordena por peso.'),
-        'Selecionar vizinhos':(MovieKNN.select_neighbors,'Mantém até k vizinhos com nota no filme candidato.'),
-        'Média ponderada':(MovieKNN.weighted_average,'Transforma notas dos vizinhos em uma previsão.'),
-        'Perfil por gênero':(HybridKNN.genre_profile,'Agrupa notas conhecidas por gênero cinematográfico.'),
-        'Similaridade combinada':(HybridKNN.combined_similarity,'Combina apenas os blocos disponíveis.'),
-        'Prever nota':(MovieKNN.predict,'Seleciona vizinhos e usa fallback quando necessário.'),
-        'Ranking':(MovieKNN.recommend,'Filtra por suporte e ordena pelas notas previstas.')}
-    name=st.selectbox('Função real do projeto',list(funcs),index=2)
-    fn,desc=funcs[name]
-    st.markdown(f'**{desc}**')
-    st.code(compact_source(fn),language='python')
-    st.caption('O mesmo núcleo é utilizado nos experimentos e na interface.')
-elif page == 12:
-    st.caption('Demonstração ao vivo · base completa, fora da avaliação experimental.')
-    from app import render_recommender
-    render_recommender()
-else:
-    lead('O algoritmo é simples. A representação dos usuários faz diferença.')
-    for col,(title,body) in zip(st.columns(3),[
-        ('k-NN funciona','Erros menores que a média do filme no teste.'),
-        ('Gêneros ajudam','Melhor RMSE observado na versão híbrida com gêneros.'),
-        ('Mais não é sempre melhor','O perfil ampliado não melhorou o RMSE em relação a gêneros.')]):
-        with col: card(title,body)
-    takeaway('Limitações: esparsidade, usuários novos, filmes raros e avaliação restrita do ranking.')
-    st.caption('Resultados exploratórios; diferenças pequenas, sem teste de significância.')
-    with st.expander('Referências'):
-        st.markdown('- [GroupLens — MovieLens 100K](https://grouplens.org/datasets/movielens/100k/)\n- [Cover & Hart (1967) — Nearest neighbor pattern classification](https://doi.org/10.1109/TIT.1967.1053964)\n- [Sarwar et al. (2001) — Item-based collaborative filtering](https://doi.org/10.1145/371920.372071)')
+# Todas as páginas compartilham este container; não há CSS por número de slide.
+LEADS = {
+    1: 'Um catálogo enorme. Gostos diferentes.',
+    2: 'Como personalizar uma recomendação?',
+    3: 'k-NN: aprender com exemplos conhecidos.',
+    4: 'Das notas conhecidas à previsão de uma nota.',
+    6: 'A maioria das avaliações não existe.',
+    7: 'A primeira versão funcionou. Mas nem toda nota alta era confiável.',
+    8: 'Mais atributos para encontrar vizinhos, mesmo sem filmes em comum.',
+    9: 'Como verificamos se a melhoria funcionou?',
+    13: 'O algoritmo é simples. A representação dos usuários faz diferença.',
+}
+with st.container(key='seminar_slide'):
+    if page not in (0, 12):
+        with st.container(key='seminar_heading'):
+            st.title(PAGES[page])
+            if page in LEADS:
+                lead(LEADS[page])
+    if page == 0:
+        st.markdown('<div class="slide-kicker">Seminário de inteligência artificial · 2026</div><div class="slide-hero">Como prever o próximo <em>filme favorito</em> de um usuário?</div>',unsafe_allow_html=True)
+        lead('k-NN e filtragem colaborativa')
+        st.write('Da primeira implementação à avaliação de um recomendador híbrido.')
+        for c,label,value in zip(st.columns(3),['Avaliações reais','Métricas de proximidade','Configurações avaliadas'],['100.000','5','90']): c.metric(label,value)
+        flow('Problema','Algoritmo','Melhoria','Resultados','Demonstração')
+    elif page == 1:
+        l,r=slide_columns([1,1.15])
+        with l:
+            cards([
+                ('Popularidade','A mesma lista de filmes para todos.'),
+                ('Personalização','Estimar o que cada usuário gostaria de assistir.','Nosso objetivo',True),
+            ],columns=1)
+        with r, st.container(key='seminar_panel_motivation'):
+            st.caption('Exemplo fictício · avaliações de 1 a 5')
+            st.dataframe(pd.DataFrame({'Filme':['Star Wars','Titanic','Toy Story'],'A':[5,2,4],'B':[2,5,2],'X':[5,2,None]}),hide_index=True,use_container_width=True,height=145)
+            takeaway('Qual nota X daria a Toy Story?')
+        st.caption('Entrada: notas conhecidas. Saída: notas previstas e ranking de filmes não avaliados.')
+    elif page == 2:
+        cards([
+            ('Conteúdo','Compara características dos filmes com o gosto do usuário.','Alternativa',False),
+            ('Colaborativa','Busca usuários com avaliações semelhantes.','Nossa primeira solução',True),
+            ('Híbrida','Combina notas e atributos adicionais para comparar usuários.','Nossa evolução',False)])
+        flow('Usuário X','Usuários semelhantes','Filmes recomendados')
+        takeaway('Começamos pela filtragem colaborativa baseada em usuários.')
+    elif page == 3:
+        flow('Armazenar instâncias','Medir proximidade','Selecionar k vizinhos','Prever')
+        cards([
+            ('Classificação','Votação dos vizinhos → uma classe. Ex.: gosta ou não gosta.'),
+            ('Regressão','Média das notas dos vizinhos → valor numérico. Ex.: 4,82.','Nosso problema',True),
+        ])
+        takeaway('Lazy learning: o modelo consulta os exemplos em vez de ajustar parâmetros preditivos.')
+    elif page == 4:
+        df=pd.DataFrame({'Filme A':[5,4,1,2,5],'Filme B':[4,4,5,5,3],'Filme C':[5,4,1,np.nan,3]},index=[1,2,3,4,5])
+        l,r=slide_columns([1,1.2])
+        with l, st.container(key='seminar_panel_knn_input'):
+            st.markdown('**1 · Perfil X: A = 5, B = 4, C = ?**')
+            st.dataframe(df,use_container_width=True,height=215)
+            k=st.slider('2 · Quantidade máxima de vizinhos (k)',1,5,3,key='knn_demo_k')
+        model=MovieKNN(df,'euclidiana')
+        neighbors=model.neighbors(pd.Series({'Filme A':5,'Filme B':4}))
+        score,details=model.predict('Filme C',neighbors,k)
+        with r, st.container(key='seminar_panel_knn_prediction'):
+            st.markdown('**3 · Mais próximos que avaliaram C**')
+            table=pd.DataFrame(details,columns=['Usuário','Distância','Peso','Em comum','Nota']).drop(columns='Em comum')
+            st.dataframe(table.round(3),hide_index=True,use_container_width=True,height=36*(len(table)+1)+3)
+            st.caption('Distância euclidiana entre A e B; peso = 1/(1+d).')
+            st.latex(r'\hat r=\frac{\sum_v w_vr_v}{\sum_v w_v}'+r'\approx\frac{'+ '+'.join(f'{row[2]:.2f}\\cdot {row[4]:g}' for row in details)+'}{'+ '+'.join(f'{row[2]:.2f}' for row in details)+'}')
+            st.metric('4 · Nota prevista para C',f'{score:.2f}')
+        st.caption('Exemplo fictício. O ranking repete a previsão para cada filme não avaliado.')
+    elif page == 5:
+        metric_demo()
+    elif page == 6:
+        for c,label,value in zip(st.columns(4),['Usuários','Filmes','Avaliações','Esparsidade'],['943','1.682','100.000','93,7%']):c.metric(label,value)
+        st.progress(.063,text='Apenas 6,3% da matriz está preenchida')
+        try:
+            ratings=load_ratings(); matrix=build_rating_matrix(ratings)
+            with st.expander('Explorar os dados reais',expanded=True):
+                with st.container(key='seminar_controls_dataset'):
+                    start=st.slider('Primeiro usuário exibido',0,len(matrix)-5,0)
+                    st.dataframe(matrix.iloc[start:start+5,:8],height=210,use_container_width=True)
+        except FileNotFoundError: st.warning('Base local ausente. Execute download_data.py.')
+        takeaway('NaN é ausência de avaliação, não nota zero.')
+    elif page == 7:
+        l,r=slide_columns(2)
+        with l:
+            cards([
+                ('Nossa primeira solução','Comparar notas em comum e prever pela média ponderada.','k-NN tradicional'),
+                ('O problema','Filmes raros podiam receber 5,00 com apenas 1 ou 2 vizinhos.','Primeira execução',True),
+            ],columns=1)
+        with r:
+            with st.container(key='seminar_panel_eligible'):
+                st.metric('Usuários elegíveis no modelo tradicional','505 / 943')
+                st.caption('Exemplo do perfil fictício executado na versão 2.')
+            with st.container(key='seminar_panel_configuration'):
+                st.metric('Melhor configuração tradicional','Hamming · k = 20')
+                st.caption('Seleção pelo RMSE de validação.')
+        takeaway('Precisávamos ampliar a busca de vizinhos e exigir suporte mínimo para recomendar.')
+    elif page == 8:
+        cards([
+            ('Notas','Avaliações dos mesmos filmes.','50%'),('Gêneros','Média das notas por gênero.','35%'),('Perfil','Idade, ocupação e sexo registrado.','15%')])
+        l,r=slide_columns([1.1,1])
+        with l, st.container(key='seminar_panel_hybrid_formula'):
+            st.latex(r'S=\frac{\sum_{j\in D}w_jS_j}{\sum_{j\in D}w_j}')
+            st.caption('Pesos iniciais, não otimizados; D = blocos disponíveis.')
+        with r, st.container(key='seminar_panel_hybrid_support'):
+            st.metric('Usuários elegíveis no exemplo','943 / 943',delta='438 a mais que o tradicional')
+            st.caption('Elegível não significa igualmente semelhante.')
+        takeaway('A nota continua sendo prevista pelos vizinhos que avaliaram o filme.')
+        with st.expander('Detalhes: gêneros, demografia e suporte'):
+            st.latex(r'S_g=1-\frac{\operatorname{mean}(|A_g-B_g|)}{4}')
+            st.write('Demografia: média das comparações disponíveis. Idade usa diferença limitada a 60 anos; ocupação e sexo usam igualdade. Exigimos evidência positiva de gosto. Suporte mínimo filtra o ranking da interface.')
+    elif page == 9:
+        for c,label,value in zip(st.columns(3),['Treino · 64%','Validação · 16%','Teste · 20%'],['64.000','16.000','20.000']):c.metric(label,value)
+        flow('3 modelos × 5 métricas × 6 valores de k','90 configurações','Escolha pelo RMSE')
+        cards([
+            ('Previsão de notas','MAE e RMSE: menor erro é melhor. Coverage: previsões com vizinhos.'),
+            ('Ranking','Precision: proporção de relevantes no Top N. Recall: proporção de relevantes recuperados.'),
+        ])
+        st.caption('Baseline: média do filme. Relevância: nota real ≥ 4. Ranking restrito ao teste.')
+        with st.expander('Fórmulas e protocolo experimental'):
+            st.latex(r'MAE=\frac{1}{n}\sum_i|r_i-\hat r_i|\qquad RMSE=\sqrt{\frac{1}{n}\sum_i(r_i-\hat r_i)^2}')
+            st.latex(r'Precision@N=\frac{acertos}{N}\qquad Recall@N=\frac{acertos}{total\ relevante}')
+            st.write('Divisão aleatória por avaliação, semente 42. Escolhemos cada modelo pela validação, depois usamos treino + validação para prever o teste. O ranking só considera avaliações ocultas; média por usuário com pelo menos um relevante.')
+    elif page == 10:
+        results_page()
+    elif page == 11:
+        flow('dataset.py','metrics.py / hybrid.py','knn.py','experiments.py / app.py')
+        funcs={
+            'Encontrar vizinhos':(MovieKNN.neighbors,'Compara o perfil com todos os usuários e ordena por peso.'),
+            'Selecionar vizinhos':(MovieKNN.select_neighbors,'Mantém até k vizinhos com nota no filme candidato.'),
+            'Média ponderada':(MovieKNN.weighted_average,'Transforma notas dos vizinhos em uma previsão.'),
+            'Perfil por gênero':(HybridKNN.genre_profile,'Agrupa notas conhecidas por gênero cinematográfico.'),
+            'Similaridade combinada':(HybridKNN.combined_similarity,'Combina apenas os blocos disponíveis.'),
+            'Prever nota':(MovieKNN.predict,'Seleciona vizinhos e usa fallback quando necessário.'),
+            'Ranking':(MovieKNN.recommend,'Filtra por suporte e ordena pelas notas previstas.')}
+        with st.container(key='seminar_controls_source'):
+            name=st.selectbox('Função real do projeto',list(funcs),index=2)
+            fn,desc=funcs[name]
+            st.markdown(f'**{desc}**')
+        st.code(compact_source(fn),language='python')
+        st.caption('O mesmo núcleo é utilizado nos experimentos e na interface.')
+    elif page == 12:
+        st.caption('Demonstração ao vivo · base completa, fora da avaliação experimental.')
+        from app import render_recommender
+        render_recommender(presentation=True)
+    else:
+        cards([
+            ('k-NN funciona','Erros menores que a média do filme no teste.'),
+            ('Gêneros ajudam','Melhor RMSE observado na versão híbrida com gêneros.'),
+            ('Mais não é sempre melhor','O perfil ampliado não melhorou o RMSE em relação a gêneros.')])
+        takeaway('Limitações: esparsidade, usuários novos, filmes raros e avaliação restrita do ranking.')
+        st.caption('Resultados exploratórios; diferenças pequenas, sem teste de significância.')
+        with st.expander('Referências'):
+            st.markdown('- [GroupLens — MovieLens 100K](https://grouplens.org/datasets/movielens/100k/)\n- [Cover & Hart (1967) — Nearest neighbor pattern classification](https://doi.org/10.1109/TIT.1967.1053964)\n- [Sarwar et al. (2001) — Item-based collaborative filtering](https://doi.org/10.1145/371920.372071)')
 
 if notes:
     prompts=[
