@@ -27,6 +27,22 @@ LABELS = {'tradicional':'Tradicional','generos':'Gêneros','perfil':'Perfil ampl
 st.set_page_config(page_title='MovieLens | Seminário de IA', layout='wide', initial_sidebar_state='collapsed')
 st.markdown('''<style>
 .stApp {background:#101218;color:#f4f4f5;}
+/* Modo apresentação: o cabeçalho nativo não deve cobrir a navegação. */
+[data-testid="stHeader"], [data-testid="stToolbar"] {
+    background:transparent !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    pointer-events:none !important;
+}
+[data-testid="stToolbarActions"], [data-testid="stAppDeployButton"],
+[data-testid="stMainMenu"], #MainMenu, [data-testid="stDecoration"] {
+    display:none !important;
+}
+/* Mantém o acesso ao menu lateral nas diferentes versões do Streamlit. */
+[data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"],
+[data-testid="stExpandSidebarButton"], [data-testid="stSidebarCollapseButton"] {
+    pointer-events:auto !important;
+}
 [data-testid="stMainBlockContainer"], .block-container {max-width:1440px;padding-top:1.7rem;padding-bottom:1rem;}
 [data-testid="stVerticalBlock"] {gap:.65rem;}
 h1,h2,h3 {letter-spacing:-.035em;}
