@@ -9,23 +9,36 @@ def data():
     return build_rating_matrix(load_ratings()),load_movies().set_index('movie_id').title.to_dict(),load_genres(),load_users()
 
 def render_recommender(presentation=False):
-    if presentation:
-        st.subheader('Recomendador de filmes — k-NN')
-    else:
+    if not presentation:
         st.title('Recomendador de filmes — k-NN')
     try: matrix,titles,genres,users=data()
     except FileNotFoundError:
         st.error('Execute python download_data.py primeiro.'); st.stop()
-    mode=st.sidebar.selectbox('Modelo',MODES,index=1)
-    metric=st.sidebar.selectbox('Métrica das notas',METRICS,index=2)
-    k=st.sidebar.slider('Máximo de vizinhos (k)',1,80,20)
-    minimum=st.sidebar.slider('Mínimo de filmes em comum (bloco de notas)',2,10,2)
-    support=st.sidebar.number_input('Mínimo de vizinhos por recomendação',1,k,min(5,k),key=f'support-{k}')
-    weights=(.5,.35,.15)
-    if mode!='tradicional':
-        st.sidebar.caption('Gêneros: distância absoluta média normalizada. Pesos redistribuídos quando faltam dados.')
-        weights=(st.sidebar.slider('Peso das notas',0,100,50),st.sidebar.slider('Peso dos gêneros',0,100,35),st.sidebar.slider('Peso do perfil',0,100,15) if mode=='perfil' else 0)
-        if sum(weights[:2])==0: st.warning('Dê peso positivo a notas ou gêneros.'); st.stop()
+    if presentation:
+        row=st.columns([1.2,1.2,1,.85])
+        mode=row[0].selectbox('Modelo',MODES,index=0,key='seminar_demo_mode')
+        metric=row[1].selectbox('Métrica das notas',METRICS,index=2,key='seminar_demo_metric')
+        k=row[2].number_input('Vizinhos (k)',1,80,20,key='seminar_demo_k')
+        with row[3],st.popover('Mais opções'):
+            minimum=st.slider('Mínimo de filmes em comum',2,10,2,key='seminar_min_common')
+            support=st.number_input('Suporte mínimo',1,k,min(5,k),key=f'seminar_support-{k}')
+            weights=(.5,.35,.15)
+            if mode!='tradicional':
+                st.caption('Gêneros: distância absoluta média normalizada.')
+                weights=(st.slider('Peso das notas',0,100,50,key='seminar_weight_r'),st.slider('Peso dos gêneros',0,100,35,key='seminar_weight_g'),st.slider('Peso do perfil',0,100,15,key='seminar_weight_d') if mode=='perfil' else 0)
+    else:
+        mode=st.sidebar.selectbox('Modelo',MODES,index=1)
+        metric=st.sidebar.selectbox('Métrica das notas',METRICS,index=2)
+        k=st.sidebar.slider('Máximo de vizinhos (k)',1,80,20)
+        minimum=st.sidebar.slider('Mínimo de filmes em comum (bloco de notas)',2,10,2)
+        support=st.sidebar.number_input('Mínimo de vizinhos por recomendação',1,k,min(5,k),key=f'support-{k}')
+        weights=(.5,.35,.15)
+        if mode!='tradicional':
+            st.sidebar.caption('Gêneros: distância absoluta média normalizada. Pesos redistribuídos quando faltam dados.')
+            weights=(st.sidebar.slider('Peso das notas',0,100,50),st.sidebar.slider('Peso dos gêneros',0,100,35),st.sidebar.slider('Peso do perfil',0,100,15) if mode=='perfil' else 0)
+    if mode!='tradicional' and sum(weights[:2])==0:
+        st.warning('Dê peso positivo a notas ou gêneros.')
+        return
     if presentation:
         _render_presentation(matrix,titles,genres,users,mode,metric,k,minimum,support,weights)
         return
@@ -57,26 +70,27 @@ def render_recommender(presentation=False):
 
 def _render_presentation(matrix,titles,genres,users,mode,metric,k,minimum,support,weights):
     """Organiza a demonstração em duas colunas, usando o mesmo recomendador."""
-    st.caption('Modelo, métrica, k e suporte: menu lateral. Avalie os filmes e clique em Recomendar.')
+    st.caption('Avalie pelo menos dois filmes e clique em Recomendar.')
     left,right=st.columns([1,1.25],gap='medium')
     demo=None
     with left,st.container(key='seminar_panel_profile'):
         st.markdown('**1 · Perfil fictício**')
-        if mode=='perfil':
-            with st.expander('Dados do perfil (opcional)',expanded=False):
-                with st.container(key='seminar_controls_profile'):
-                    age_col,sex_col=st.columns(2)
-                    age=age_col.number_input('Idade (0 = não informar)',0,100,0,key='seminar_demo_age')
-                    sex=sex_col.selectbox('Sexo registrado',['Não informar','F','M'],key='seminar_demo_sex')
-                    occupation=st.selectbox('Ocupação',['Não informar']+sorted(users.occupation.unique().tolist()),key='seminar_demo_occupation')
-                demo={'age':age or None,'occupation':None if occupation=='Não informar' else occupation,'sex':None if sex=='Não informar' else sex}
-        selected=st.multiselect('Filmes já avaliados',list(matrix.columns),format_func=lambda x:f'{titles.get(x,x)} [{x}]',key='seminar_selected_movies')
-        ratings={}
-        with st.container(key='seminar_controls_ratings'):
-            for index,movie in enumerate(selected):
-                if index%2==0:
-                    columns=st.columns(2)
-                ratings[movie]=columns[index%2].slider(titles.get(movie,str(movie)),1,5,3,key=f'seminar_rating-{movie}')
+        with st.container(key='seminar_demo_inputs'):
+            if mode=='perfil':
+                with st.expander('Dados do perfil (opcional)',expanded=False):
+                    with st.container(key='seminar_controls_profile'):
+                        age_col,sex_col=st.columns(2)
+                        age=age_col.number_input('Idade (0 = não informar)',0,100,0,key='seminar_demo_age')
+                        sex=sex_col.selectbox('Sexo registrado',['Não informar','F','M'],key='seminar_demo_sex')
+                        occupation=st.selectbox('Ocupação',['Não informar']+sorted(users.occupation.unique().tolist()),key='seminar_demo_occupation')
+                    demo={'age':age or None,'occupation':None if occupation=='Não informar' else occupation,'sex':None if sex=='Não informar' else sex}
+            selected=st.multiselect('Filmes já avaliados',list(matrix.columns),default=[m for m in (1,50,288) if m in matrix.columns],format_func=lambda x:f'{titles.get(x,x)} [{x}]',key='seminar_selected_movies')
+            ratings={}
+            with st.container(key='seminar_controls_ratings'):
+                for index,movie in enumerate(selected):
+                    if index%2==0:
+                        columns=st.columns(2)
+                    ratings[movie]=columns[index%2].slider(titles.get(movie,str(movie)),1,5,{1:5,50:4,288:2}.get(movie,3),key=f'seminar_rating-{movie}')
         requested=st.button('Recomendar',key='seminar_recommend',use_container_width=True)
         # Não exibe notas calculadas para um perfil/configuração anterior.
         signature=(mode,metric,k,minimum,int(support),tuple(weights),tuple(sorted(ratings.items())),tuple(sorted((demo or {}).items())))

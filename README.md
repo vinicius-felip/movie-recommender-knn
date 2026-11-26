@@ -37,4 +37,4 @@ A execução dos experimentos gera CSVs de validação, teste, previsões e grá
 - Testes: `python -m unittest discover -s tests -v`.
 
 ## Modo seminário
-Execute `python -m streamlit run seminar.py` na raiz. A apresentação tem 14 páginas, navegação e roteiro opcional. A página 6 usa as funções reais de `src/metrics.py` e exibe fórmulas, código e resultados. Os resultados são lidos de `results_v2/` ou do ZIP local. A página 13 reutiliza `render_recommender()` de `app.py`, que continua executável separadamente. Use F11 para tela cheia.
+Execute `python -m streamlit run seminar.py` na raiz. A apresentação tem 14 páginas com navegação por botões, setas e seleção direta. A página 6 usa as funções reais de `src/metrics.py` e exibe fórmulas, código e resultados. Os resultados são lidos de `results_v2/` ou do ZIP local. A página 13 reutiliza `render_recommender()` de `app.py`, que continua executável separadamente. Use F11 para tela cheia.
