@@ -12,6 +12,7 @@ from src import metrics
 from src.dataset import load_ratings, build_rating_matrix
 from src.knn import MovieKNN
 from src.hybrid import HybridKNN
+from src.posters import image_html, valid_image
 from ranking_metrics import precision_recall_at_n
 
 ROOT = Path(__file__).resolve().parent
@@ -170,8 +171,8 @@ h3 {font-size:1.12rem !important;padding:.15rem 0 !important;}
 .slide-conclusion {display:grid;grid-template-columns:46px 1fr;gap:16px;align-items:center;font-size:1.28rem;padding:10px 0;}
 .slide-conclusion b {color:#ff6977;font-size:1.8rem;}
 .st-key-seminar_source_code [data-testid="stCode"] {max-height:410px;overflow:auto;}
-.st-key-seminar_demo_inputs {max-height:330px;overflow-y:auto;scrollbar-gutter:stable;}
-.st-key-seminar_panel_results {max-height:440px;overflow-y:auto;scrollbar-gutter:stable;}
+.st-key-seminar_demo_inputs {max-height:405px;overflow-y:auto;scrollbar-gutter:stable;}
+.st-key-seminar_panel_results {max-height:495px;overflow-y:auto;scrollbar-gutter:stable;}
 @media (max-height:650px) {
  .stApp {--section-gap:12px;--card-gap:16px;--panel-gap:8px;--block-gap:8px;}
  [data-testid="stMainBlockContainer"], .block-container {padding-top:12px;padding-bottom:12px;}
@@ -262,6 +263,61 @@ h3 {font-size:1.12rem !important;padding:.15rem 0 !important;}
     }
     #stMain [class*="st-key-seminar_slide_"] .slide-cards {gap:16px;}
     #stMain [class*="st-key-seminar_slide_"] .slide-key {padding:8px 12px;}
+}
+/* Páginas 2 e 9: pôsteres reais e painéis de cálculo alinhados. */
+#stMain .st-key-seminar_slide_02 .slide-poster-row {
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:24px;max-width:460px;margin:12px auto 0;
+}
+#stMain .st-key-seminar_slide_02 .film-poster {margin:0;text-align:center;min-width:0;}
+#stMain .st-key-seminar_slide_02 .film-poster img,
+#stMain .st-key-seminar_slide_02 .film-poster-placeholder {
+    width:100%;height:clamp(140px,30vh,230px);object-fit:contain;
+    background:#191c24;border:1px solid #303540;border-radius:10px;box-sizing:border-box;
+}
+#stMain .st-key-seminar_slide_02 .film-poster-placeholder {
+    display:flex;align-items:center;justify-content:center;padding:12px;color:#b6bac5;
+}
+#stMain .st-key-seminar_slide_02 .film-poster figcaption {font-size:1rem;font-weight:650;margin-top:8px;}
+#stMain .st-key-seminar_slide_02 .poster-group-title {font-size:1.18rem;font-weight:700;text-align:center;}
+#stMain .st-key-seminar_slide_02 .poster-group-genre {color:#b6bac5;font-size:.95rem;text-align:center;margin-top:12px;}
+#stMain .st-key-seminar_slide_09 .slide-card {min-height:92px;padding:14px 20px;}
+#stMain .st-key-seminar_slide_09 .slide-card .card-tag {margin-bottom:6px;}
+#stMain .st-key-seminar_slide_09 .slide-card h3 {margin-bottom:6px !important;}
+#stMain .st-key-seminar_slide_09 [class*="st-key-seminar_hybrid_row_"] {
+    padding-top:4px;padding-bottom:2px;
+}
+/* Cada fórmula e sua legenda ocupam UM bloco HTML com altura intrínseca.
+   Não aplicar borda/padding ao wrapper de altura calculada do Streamlit. */
+#stMain .st-key-seminar_slide_09 .hybrid-formula-card {
+    background:#191c24;border:1px solid #303540;border-radius:12px;
+    padding:16px 20px;box-sizing:border-box;min-height:0;height:auto;
+    display:flex;flex-direction:column;gap:10px;
+}
+#stMain .st-key-seminar_slide_09 .hybrid-formula-card .hybrid-label,
+#stMain .st-key-seminar_slide_09 .hybrid-formula-card .hybrid-note {margin:0;}
+#stMain .st-key-seminar_slide_09 .hybrid-equation {display:flex;align-items:center;justify-content:center;gap:8px;font:italic 1.35rem Georgia,serif;line-height:1.3;}
+#stMain .st-key-seminar_slide_09 .hybrid-frac {display:inline-grid;text-align:center;align-items:center;vertical-align:middle;}
+#stMain .st-key-seminar_slide_09 .hybrid-frac > span:first-child {border-bottom:1px solid currentColor;padding:0 5px 3px;}
+#stMain .st-key-seminar_slide_09 .hybrid-frac > span:last-child {padding:3px 5px 0;}
+#stMain .st-key-seminar_slide_09 .hybrid-formula-card .hybrid-note {line-height:1.4;overflow-wrap:anywhere;}
+#stMain .st-key-seminar_slide_09 .hybrid-label {font-size:1.08rem;font-weight:700;margin:0 0 10px;}
+#stMain .st-key-seminar_slide_09 .hybrid-note {color:#b6bac5;font-size:.93rem;line-height:1.35;margin:10px 0 0;}
+#stMain .st-key-seminar_slide_09 .hybrid-weights {display:flex;min-height:36px;border-radius:7px;overflow:hidden;text-align:center;font-weight:650;}
+#stMain .st-key-seminar_slide_09 .hybrid-weights > span {display:flex;align-items:center;justify-content:center;padding:6px 3px;}
+#stMain .st-key-seminar_slide_09 .hybrid-summary {
+    display:grid;grid-template-columns:200px 1fr;align-items:center;gap:20px;
+    border:1px solid #303540;border-left:4px solid #f04452;border-radius:10px;
+    background:#191c24;padding:13px 20px;margin-top:6px;
+}
+#stMain .st-key-seminar_slide_09 .hybrid-summary p {margin:3px 0;}
+#stMain .st-key-seminar_slide_09 .katex-display {margin:10px 0 !important;}
+@media (max-height:650px) {
+    #stMain .st-key-seminar_slide_09 [class*="st-key-seminar_hybrid_row_"] {padding-top:6px;}
+    #stMain .st-key-seminar_slide_09 .hybrid-summary {margin-top:6px;padding:10px 14px;}
+}
+@media (max-width:760px) {
+    #stMain .st-key-seminar_slide_09 .hybrid-summary {grid-template-columns:1fr;gap:8px;}
 }
 </style>''', unsafe_allow_html=True)
 
@@ -539,10 +595,32 @@ def staged_cards(items, stage, columns=None):
     st.markdown(f'<div class="slide-cards" style="--card-columns:{columns}">{html}</div>',unsafe_allow_html=True)
 
 
-def poster_pair(title1,title2,genre):
-    # Cartazes tipográficos locais: independentes de conexão externa.
-    st.markdown(f'<div class="slide-poster-row"><div class="slide-poster">{escape(title1)}</div><div class="slide-poster">{escape(title2)}</div></div>',unsafe_allow_html=True)
-    st.caption(genre)
+POSTERS_DIR = ROOT / 'assets' / 'posters'
+POSTER_FILES = {
+    'Star Wars': 'star_wars.jpg', 'Terminator 2': 'terminator_2.jpg',
+    'Titanic': 'titanic.jpg', 'Pretty Woman': 'pretty_woman.jpg',
+}
+
+
+def poster_pair(title1, title2, genre, user):
+    """Pôsteres locais, sem requisições à internet durante a apresentação."""
+    items = []
+    for title in (title1, title2):
+        path = POSTERS_DIR / POSTER_FILES[title]
+        if valid_image(path):
+            image = image_html(path, title, 'film-poster-image')
+        else:
+            image = '<div class="film-poster-placeholder">Pôster não disponível</div>'
+        items.append(f'<figure class="film-poster">{image}<figcaption>{escape(title)}</figcaption></figure>')
+    st.markdown(f'<div class="poster-group-title">{escape(user)}</div><div class="slide-poster-row">{"".join(items)}</div><div class="poster-group-genre">{escape(genre)}</div>', unsafe_allow_html=True)
+
+
+def hybrid_formula_card(title, prefix, numerator, denominator, note):
+    # Todos os argumentos são constantes da página, não dados do usuário.
+    st.markdown(f'<div class="hybrid-formula-card"><div class="hybrid-label">{escape(title)}</div>'
+                f'<div class="hybrid-equation"><span>{prefix}</span><span class="hybrid-frac">'
+                f'<span>{numerator}</span><span>{denominator}</span></span></div>'
+                f'<div class="hybrid-note">{escape(note)}</div></div>',unsafe_allow_html=True)
 
 
 with st.container(key=f'seminar_slide_{page+1:02d}'):
@@ -559,9 +637,11 @@ with st.container(key=f'seminar_slide_{page+1:02d}'):
         if stage>=2:
             left,right=slide_columns(2)
             with left:
-                st.markdown('**Usuário A**');poster_pair('Star Wars','Terminator 2','Ação e ficção científica')
+                poster_pair('Star Wars','Terminator 2','Ação e ficção científica','Usuário A')
             with right:
-                st.markdown('**Usuário B**');poster_pair('Titanic','Pretty Woman','Romance e comédia')
+                poster_pair('Titanic','Pretty Woman','Romance e comédia','Usuário B')
+            if any(not valid_image(POSTERS_DIR / filename) for filename in POSTER_FILES.values()):
+                st.caption('Para carregar as capas locais, execute python download_catalog_posters.py antes do seminário.')
         if stage>=3: takeaway('Nosso objetivo: prever as notas de filmes ainda não avaliados e gerar recomendações personalizadas.')
     elif page==2:
         lead('Três abordagens para personalizar recomendações.')
@@ -628,22 +708,26 @@ with st.container(key=f'seminar_slide_{page+1:02d}'):
     elif page==8:
         staged_cards([('Tradicional','Avaliações dos filmes.','Modelo 1',False,0),('Gêneros','Avaliações + preferências por gênero.','Modelo 2',False,1),('Perfil ampliado','Avaliações + gêneros + demografia.','Modelo 3',False,2)],stage)
         if stage>=1:
-            l,r=slide_columns([1,1])
-            with l:
-                st.markdown('**Comparação por gênero · exemplo fictício**')
-                small_table(pd.DataFrame([('Ação',4.8,4.5),('Romance',2.,2.5),('Comédia',3.5,3.8)],columns=['Gênero','A','B']),index=False)
-            with r:
-                st.markdown('**Similaridade por gênero**');st.latex(r'S_g=1-\frac{\operatorname{mean}(|A_g-B_g|)}{4}')
-                st.caption('Permite comparar gostos mesmo sem filmes em comum.')
+            with st.container(key='seminar_hybrid_row_genre'):
+                l,r=slide_columns([1.15,1])
+                with l:
+                    st.markdown('<div class="hybrid-label">Comparação por gênero · exemplo fictício</div>',unsafe_allow_html=True)
+                    small_table(pd.DataFrame([('Ação',4.8,4.5),('Romance',2.,2.5),('Comédia',3.5,3.8)],columns=['Gênero','A','B']),index=False)
+                with r:
+                    hybrid_formula_card('Similaridade por gênero',
+                        'S<sub>g</sub> = 1 −', 'mean(|A<sub>g</sub> − B<sub>g</sub>|)', '4',
+                        'Permite comparar gostos mesmo sem filmes em comum.')
         if stage>=2:
-            l,r=slide_columns([1.2,1])
-            with l:
-                st.markdown('**Similaridade combinada · perfil ampliado**')
-                st.markdown('<div style="display:flex;height:32px;border-radius:6px;overflow:hidden;text-align:center;line-height:32px;font-weight:650"><div style="width:50%;background:#b92b3a">Notas · 50%</div><div style="width:35%;background:#4f6585">Gêneros · 35%</div><div style="width:15%;background:#636775">Perfil · 15%</div></div>',unsafe_allow_html=True)
-                st.caption('Idade: diferença normalizada. Ocupação e sexo: igualdade. Pesos iniciais não otimizados.')
-            with r: st.latex(r'S=\frac{\sum_{j\in D}w_jS_j}{\sum_{j\in D}w_j}');st.caption('D: blocos disponíveis. Exigimos evidência positiva de preferência.')
+            with st.container(key='seminar_hybrid_row_weights'):
+                l,r=slide_columns([1.15,1])
+                with l:
+                    st.markdown('<div class="hybrid-label">Pesos do perfil ampliado</div><div class="hybrid-weights"><span style="width:50%;background:#b92b3a">Notas · 50%</span><span style="width:35%;background:#4f6585">Gêneros · 35%</span><span style="width:15%;background:#636775">Perfil · 15%</span></div><div class="hybrid-note">Idade: diferença normalizada. Ocupação e sexo: igualdade. Pesos iniciais não otimizados.</div>',unsafe_allow_html=True)
+                with r:
+                    hybrid_formula_card('Similaridade combinada', 'S =',
+                        '∑<sub>j∈D</sub> w<sub>j</sub>S<sub>j</sub>', '∑<sub>j∈D</sub> w<sub>j</sub>',
+                        'D: blocos disponíveis. Exigimos evidência positiva de preferência.')
         if stage>=3:
-            st.markdown('<div class="slide-split"><span class="slide-big">505 → 943</span><span>usuários elegíveis no exemplo.<br>O filtro de suporte mínimo protege o ranking de filmes com poucas avaliações.</span></div>',unsafe_allow_html=True)
+            st.markdown('<div class="hybrid-summary"><span class="slide-big">505 → 943</span><div><p><strong>Usuários elegíveis no exemplo</strong></p><p>O filtro de suporte mínimo evita recomendações sustentadas por pouquíssimas avaliações.</p></div></div>',unsafe_allow_html=True)
     elif page==9:
         lead('Como saber se nossas previsões são boas?')
         st.markdown('<div style="display:flex;height:36px;border-radius:6px;overflow:hidden;text-align:center;line-height:36px;font-weight:650"><div style="width:64%;background:#b92b3a">64%</div><div style="width:16%;background:#4f6585">16%</div><div style="width:20%;background:#636775">20%</div></div>',unsafe_allow_html=True)

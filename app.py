@@ -1,14 +1,17 @@
 import pandas as pd
 import streamlit as st
-from src.dataset import load_ratings,load_movies,build_rating_matrix,load_genres,load_users
+from src.dataset import load_ratings,load_movies,build_rating_matrix,load_genres,load_users,display_movie_title
 from src.metrics import METRICS
 from src.hybrid import HybridKNN, MODES
+from src.posters import POSTER_CSS, movie_card
 
 @st.cache_data
 def data():
-    return build_rating_matrix(load_ratings()),load_movies().set_index('movie_id').title.to_dict(),load_genres(),load_users()
+    titles = load_movies().set_index('movie_id').title.map(display_movie_title).to_dict()
+    return build_rating_matrix(load_ratings()),titles,load_genres(),load_users()
 
 def render_recommender(presentation=False):
+    st.markdown(POSTER_CSS, unsafe_allow_html=True)
     if not presentation:
         st.title('Recomendador de filmes — k-NN')
     try: matrix,titles,genres,users=data()
@@ -50,7 +53,13 @@ def render_recommender(presentation=False):
         sex=st.selectbox('Sexo registrado',['Não informar','F','M'])
         demo={'age':age or None,'occupation':None if occupation=='Não informar' else occupation,'sex':None if sex=='Não informar' else sex}
     selected=st.multiselect('Filmes já avaliados',list(matrix.columns),format_func=lambda x:f'{titles.get(x,x)} [{x}]')
-    ratings={movie:st.slider(titles.get(movie,str(movie)),1,5,3,key=f'rating-{movie}') for movie in selected}
+    ratings={}
+    for index,movie in enumerate(selected):
+        if index%3==0:
+            columns=st.columns(3)
+        with columns[index%3]:
+            st.markdown(movie_card(movie,titles.get(movie,movie)),unsafe_allow_html=True)
+            ratings[movie]=st.slider(f'Nota: {titles.get(movie,movie)}',1,5,3,key=f'rating-{movie}',label_visibility='collapsed')
     if st.button('Recomendar'):
         if len(ratings)<2 or (mode=='tradicional' and len(ratings)<minimum): st.warning('Avalie mais filmes.'); st.stop()
         model=HybridKNN(matrix,metric,minimum,genres,users,mode,weights)
@@ -58,7 +67,7 @@ def render_recommender(presentation=False):
         st.metric('Usuários semelhantes elegíveis',len(neighbors))
         st.write('Usuários elegíveis sem filmes em comum:',sum(r[4]==0 for r in neighbors))
         if not recs: st.warning('Nenhum filme atingiu o suporte mínimo. Reduza o suporte ou avalie mais filmes.'); st.stop()
-        st.dataframe(pd.DataFrame([(titles.get(m,m),round(s,3),n) for m,s,n in recs],columns=['Filme','Nota prevista','Vizinhos']),hide_index=True)
+        _render_movie_cards(recs,titles)
         st.subheader('Vizinhos mais próximos do perfil (ranking geral)')
         st.dataframe(pd.DataFrame([r[1:] for r in neighbors[:k]],columns=['Usuário','Proximidade','Peso','Filmes em comum']),hide_index=True)
         for movie,score,n in recs:
@@ -66,6 +75,12 @@ def render_recommender(presentation=False):
                 _,details=model.predict(movie,neighbors,k)
                 st.dataframe(pd.DataFrame(details,columns=['Usuário','Proximidade','Peso','Filmes em comum','Nota']),hide_index=True)
     st.caption('Demonstração: base completa. Experimentos: conjuntos separados. O filtro de suporte só afeta o ranking exibido.')
+
+
+def _render_movie_cards(recs,titles):
+    cards=''.join(movie_card(movie,titles.get(movie,movie),score,count,rank)
+                  for rank,(movie,score,count) in enumerate(recs,1))
+    st.markdown(f'<div class="movie-poster-grid">{cards}</div>',unsafe_allow_html=True)
 
 
 def _render_presentation(matrix,titles,genres,users,mode,metric,k,minimum,support,weights):
@@ -90,7 +105,9 @@ def _render_presentation(matrix,titles,genres,users,mode,metric,k,minimum,suppor
                 for index,movie in enumerate(selected):
                     if index%2==0:
                         columns=st.columns(2)
-                    ratings[movie]=columns[index%2].slider(titles.get(movie,str(movie)),1,5,{1:5,50:4,288:2}.get(movie,3),key=f'seminar_rating-{movie}')
+                    with columns[index%2]:
+                        st.markdown(movie_card(movie,titles.get(movie,movie)),unsafe_allow_html=True)
+                        ratings[movie]=st.slider(f'Nota: {titles.get(movie,movie)}',1,5,{1:5,50:4,288:2}.get(movie,3),key=f'seminar_rating-{movie}',label_visibility='collapsed')
         requested=st.button('Recomendar',key='seminar_recommend',use_container_width=True)
         # Não exibe notas calculadas para um perfil/configuração anterior.
         signature=(mode,metric,k,minimum,int(support),tuple(weights),tuple(sorted(ratings.items())),tuple(sorted((demo or {}).items())))
@@ -117,12 +134,13 @@ def _render_presentation(matrix,titles,genres,users,mode,metric,k,minimum,suppor
             if not recs:
                 st.warning('Nenhum filme atingiu o suporte mínimo. Reduza o suporte ou avalie mais filmes.')
             else:
-                st.dataframe(pd.DataFrame([(titles.get(movie,movie),round(score,3),count) for movie,score,count in recs],columns=['Filme','Nota prevista','Vizinhos']),hide_index=True,use_container_width=True,height=35*(len(recs)+1)+3)
-                with st.expander('Vizinhos mais próximos do perfil (ranking geral)',expanded=False):
-                    st.dataframe(pd.DataFrame([row[1:] for row in neighbors[:k]],columns=['Usuário','Proximidade','Peso','Filmes em comum']),hide_index=True,use_container_width=True)
-                with st.expander('Como foi prevista a nota de um filme?',expanded=False):
-                    movie=st.selectbox('Filme recomendado',[movie for movie,_,_ in recs],format_func=lambda value:titles.get(value,value))
-                    st.dataframe(pd.DataFrame(result['details'][movie],columns=['Usuário','Proximidade','Peso','Filmes em comum','Nota']),hide_index=True,use_container_width=True)
+                _render_movie_cards(recs,titles)
+                with st.container(key='seminar_recommendation_details'):
+                    with st.expander('Vizinhos mais próximos do perfil (ranking geral)',expanded=False):
+                        st.dataframe(pd.DataFrame([row[1:] for row in neighbors[:k]],columns=['Usuário','Proximidade','Peso','Filmes em comum']),hide_index=True,use_container_width=True)
+                    with st.expander('Como foi prevista a nota de um filme?',expanded=False):
+                        movie=st.selectbox('Filme recomendado',[movie for movie,_,_ in recs],format_func=lambda value:titles.get(value,value))
+                        st.dataframe(pd.DataFrame(result['details'][movie],columns=['Usuário','Proximidade','Peso','Filmes em comum','Nota']),hide_index=True,use_container_width=True)
     st.caption('Demonstração: base completa. Experimentos: conjuntos separados. O filtro de suporte só afeta o ranking exibido.')
 
 

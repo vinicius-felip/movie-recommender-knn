@@ -2,3 +2,7 @@
 __pycache__/
 data/ml-100k/
 results*/
+
+# Capas baixadas localmente; não versionar imagens de terceiros.
+assets/posters/catalog/
+assets/posters/*.jpg
